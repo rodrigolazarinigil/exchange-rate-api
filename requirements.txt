@@ -1,0 +1,4 @@
+flask
+httpretty
+requests
+requests_mock
