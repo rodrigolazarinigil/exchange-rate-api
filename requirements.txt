@@ -1,4 +1,5 @@
 flask
 httpretty
-requests
-requests_mock
+requests==2.18.4
+requests-mock==1.4.0
+SQLAlchemy==1.2.7

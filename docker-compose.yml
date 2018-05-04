@@ -4,15 +4,17 @@ services:
         container_name: exchange-rate
         build: ""
         image: exchange-rate
+        ports:
+          - 5000:5000
         environment:
           - CRONFREQUENCY=* * * * *
 
-    postgres:
-        container_name: postgres
+    exchange-rate-db:
+        container_name: exchange-rate-db
         build: "db/"
-        image: postgres-dw
+        image: exchange-rate-db
         ports:
-          - 5432:5432
+          - 5433:5432
         environment:
           - POSTGRES_USER=exchange_rate_user
           - POSTGRES_PASSWORD=password

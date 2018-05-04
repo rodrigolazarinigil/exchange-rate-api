@@ -1,4 +1,4 @@
-grant all privileges on database "exchange_rate_api" to exchange_user;
+grant all privileges on database "exchange_rate" to exchange_user;
 
 CREATE SCHEMA exchange
     AUTHORIZATION exchange_user;

@@ -11,8 +11,8 @@ COPY util/ /code/util
 COPY definitions.py /code/definitions.py
 COPY flask_app.py /code/flask_app.py
 
-COPY scripts/cron-entrypoint.sh /cron-entrypoint.sh
-RUN chmod +x /cron-entrypoint.sh
-ENTRYPOINT ["/cron-entrypoint.sh"]
+COPY scripts/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
 WORKDIR /code/
