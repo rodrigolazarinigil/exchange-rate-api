@@ -1,7 +1,7 @@
 import requests
 
 
-class FixerIoRequestApi:
+class FixerIoRequester:
 	def __init__(self):
 		self.latest_rate_url = \
 			"http://data.fixer.io/request_api/latest?access_key=c73bd725bbdbb2aac4a292fff231c619&base=EUR&symbols=USD"
@@ -12,6 +12,6 @@ class FixerIoRequestApi:
 		r = requests.get(url=self.latest_rate_url)
 		return str(r.json())
 
-	def get_historical_rate_by_range(self):
+	def get_historical_rate_by_range(self, date):
 		r = requests.get(url=self.historical_rate_by_range_url)
 		return str(r.json())

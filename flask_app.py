@@ -1,9 +1,9 @@
-from flask import Flask
+from flask import Flask, request
 
-from util.api_functions import get_request_api
+from util.api_functions import get_requester
 
 app = Flask(__name__)
-request_api = get_request_api()
+request_api = get_requester()
 
 
 @app.route('/latest')
@@ -13,7 +13,10 @@ def latest():
 
 @app.route('/history')
 def history():
-	return request_api.get_historical_rate_by_range()
+	return request_api.get_historical_rate_by_range(
+		start_date=request.args.get("start"),
+		end_date=request.args.get("end"),
+	)
 
 # {'rates': {'USD': 1.201633}, 'base': 'EUR', 'date': '2018-05-01', 'success': True, 'timestamp': 1525183803}
 

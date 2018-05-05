@@ -1,6 +1,6 @@
 from unittest import TestCase, mock
 
-from db.exchange_rate_db import ExchangeRateDb
+from domain.exchange_rate_db import ExchangeRateDb
 from util.db_connection import PostgresClient
 import os
 
