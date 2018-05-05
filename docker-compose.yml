@@ -6,8 +6,9 @@ services:
         image: exchange-rate
         ports:
           - 5000:5000
-        environment:
-          - CRONFREQUENCY=0 * * * *
+        env_file:
+          - conf/app_environ.conf
+          - conf/db_environ.conf
         network_mode: host
 
     db:
@@ -16,6 +17,7 @@ services:
         image: exchange-rate-db
         ports:
           - 5432:5432
+        env_file: conf/db_environ.conf
         environment:
           - POSTGRES_USER=exchange_rate_user
           - POSTGRES_PASSWORD=password

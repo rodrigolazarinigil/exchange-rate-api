@@ -48,10 +48,11 @@ class ExchangeRateDbTest(TestCase):
 		}
 		
 		self.object.save_json_rate_to_db(input_json)
-		mock_save_record.assert_called_with(
-			values_dict={
-				'date': '2018-05-01', 'timestamp': datetime.datetime(2018, 5, 1, 11, 10, 3),
-				'usd_value': 1.201633})
+		
+		call_args = mock_save_record.call_args
+		self.assertEqual(datetime.datetime.fromtimestamp(1525183803), call_args[1]["values_dict"]["timestamp"])
+		self.assertEqual(1.201633, call_args[1]["values_dict"]["usd_value"])
+		self.assertEqual('2018-05-01', call_args[1]["values_dict"]["date"])
 	
 	@mock.patch("{}.ExchangeRateDb.save_record".format(ExchangeRateDb.__module__))
 	def historical_rate_to_db_test(self, mock_save_record):
@@ -59,10 +60,11 @@ class ExchangeRateDbTest(TestCase):
 			'success': True, 'rates': {'USD': 1.201496}, 'timestamp': 1514851199, 'base': 'EUR',
 			'date': '2018-01-01', 'historical': True}
 		self.object.save_json_rate_to_db(input_json)
-		mock_save_record.assert_called_with(
-			values_dict={
-				'usd_value': 1.201496, 'timestamp': datetime.datetime(2018, 1, 1, 21, 59, 59),
-				'date': '2018-01-01'})
+		
+		call_args = mock_save_record.call_args
+		self.assertEqual(datetime.datetime.fromtimestamp(1514851199), call_args[1]["values_dict"]["timestamp"])
+		self.assertEqual(1.201496, call_args[1]["values_dict"]["usd_value"])
+		self.assertEqual('2018-01-01', call_args[1]["values_dict"]["date"])
 	
 	@mock.patch("{}.ExchangeRateDb.db_connect".format(ExchangeRateDb.__module__))
 	@mock.patch("{}.sqlalchemy".format(ExchangeRateDb.__module__))

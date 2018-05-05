@@ -1,7 +1,5 @@
-flask
-httpretty
+Flask==1.0.2
 requests==2.18.4
 requests-mock==1.4.0
 SQLAlchemy==1.2.7
-pandas
-psycopg2
+psycopg2==2.7.4

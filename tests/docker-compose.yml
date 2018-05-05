@@ -1,0 +1,9 @@
+version: '2'
+services:
+    tests:
+        container_name: tests
+        build: ""
+        image: exchange-rate-tests
+        environment:
+          - TESTFILE=
+          - TYPE=unit

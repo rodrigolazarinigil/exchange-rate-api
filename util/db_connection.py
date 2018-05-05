@@ -13,11 +13,11 @@ class PostgresClient:
 	def get_conn_engine(cls) -> sqlalchemy.engine.Engine:
 		if cls.conn_engine is None:
 			connection_string = "postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}".format(
-				user=os.getenv("USER"),
-				pwd=os.getenv("PWD"),
+				user=os.getenv("POSTGRES_USER"),
+				pwd=os.getenv("POSTGRES_PASSWORD"),
 				host=os.getenv("HOST"),
 				port=os.getenv("PORT"),
-				db=os.getenv("DB")
+				db=os.getenv("POSTGRES_DB")
 			)
 
 			cls.conn_engine = sqlalchemy.create_engine(
