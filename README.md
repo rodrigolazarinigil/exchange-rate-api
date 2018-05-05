@@ -47,7 +47,6 @@ curl "http://ec2-52-55-75-78.compute-1.amazonaws.com:5000/history?start=2018-01-
 - make, docker and docker-compose binaries installed;
 - Set the frequency of data extraction on 'conf/app_environ.conf'
 - You can check the 'conf/app_environ.conf' in case you wish to connect to the db later.
-- If you do not wish the database to start with a sample, just remove the file 'db/02_sample.sql'
 
 ```
 git clone https://github.com/rodrigolazarinigil/exchange-rate-api.git
@@ -65,3 +64,25 @@ a crontab configuration to extract by period.
 ```
 pip install -r requirements.txt
 ```
+
+### How to run tests
+
+All unit tests are run with a derived docker image from the real app. It install nosetests, executes all tests and shows the coverage at the end.
+
+```
+make unit-tests
+```
+
+![Example of test result](images/unit-tests.png)
+
+### Database
+
+All the data is stored in a docker postgres container. The model and scripts are 
+in the 'db' directory. Only one table 'euro_to_dollar_rate' was created.
+There is also a sample file with some records 'db/02_sample.sql'. If you do not wish these samples, just remove the file 
+before building.
+
+The database configurations are stored in 'conf/db_environ.conf'
+
+![Example of test result](images/db.png)
+

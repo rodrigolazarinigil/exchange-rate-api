@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 WORKING_DIR=/code/tests/${TYPE}/
-COVER_PACKAGE=/code/domain/
+COVER_PACKAGE=/code/
 
 echo "
 Pronto para executar testes:
@@ -20,4 +20,4 @@ nosetests \
     --cover-package=${COVER_PACKAGE} \
     --cover-branches \
     --exe \
-    --cover-min-percentage=15 ${TESTFILE} \
+    --cover-min-percentage=75 ${TESTFILE} \

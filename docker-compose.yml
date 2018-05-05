@@ -18,7 +18,3 @@ services:
         ports:
           - 5432:5432
         env_file: conf/db_environ.conf
-        environment:
-          - POSTGRES_USER=exchange_rate_user
-          - POSTGRES_PASSWORD=password
-          - POSTGRES_DB=exchange_rate
