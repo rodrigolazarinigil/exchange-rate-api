@@ -1,5 +1,4 @@
-from sqlalchemy import MetaData, Table, Column, Date, Float
-from sqlalchemy.dialects.postgresql import *
+import sqlalchemy
 
 
 class ExchangeRateDb:
@@ -21,10 +20,12 @@ class ExchangeRateDb:
 		"""
 		return self.db_client.get_conn_engine().connect()
 	
-	def latest_rate_to_db(self, json_result):
+	def save_json_rate_to_db(self, json_result):
 		"""
 			Saves data to db based on a JSON
-		:param json_result: JSON obtained from the 'latest rate' API
+		:param json_result: JSON obtained from the 'latest rate' or 'historical rate' API
+			- date and timestamp info must be on the first level;
+			- usd_value is inside a rates dictionary
 		Example: {
 			'rates': {'USD': 1.201633}, 'base': 'EUR', 'date': '2018-05-01', 'success': True,
 			'timestamp': 1525183803
@@ -46,17 +47,17 @@ class ExchangeRateDb:
 		conn = self.db_connect()
 		
 		try:
-			m = MetaData()
+			m = sqlalchemy.MetaData()
 			
-			rate_table = Table(
+			rate_table = sqlalchemy.Table(
 				"euro_to_dollar_rate", m,
-				Column('date', Date),
-				Column('timestamp', TIMESTAMP),
-				Column('usd_value', Float),
+				sqlalchemy.Column('date', sqlalchemy.Date),
+				sqlalchemy.Column('timestamp', sqlalchemy.TIMESTAMP),
+				sqlalchemy.Column('usd_value', sqlalchemy.Float),
 				schema='exchange'
 			)
 			
-			insert_stmt = insert(rate_table).values(**values_dict)
+			insert_stmt = sqlalchemy.insert(rate_table).values(**values_dict)
 			insert_if_not_exists = insert_stmt.on_conflict_do_nothing(
 				index_elements=['date', 'timestamp']
 			)
