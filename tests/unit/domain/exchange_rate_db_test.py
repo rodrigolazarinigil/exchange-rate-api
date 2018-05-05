@@ -1,3 +1,4 @@
+from decimal import Decimal
 from unittest import TestCase, mock
 
 from domain.exchange_rate_db import ExchangeRateDb
@@ -48,7 +49,9 @@ class ExchangeRateDbTest(TestCase):
 		
 		self.object.save_json_rate_to_db(input_json)
 		mock_save_record.assert_called_with(
-			values_dict={'date': '2018-05-01', 'timestamp': datetime.datetime(2018, 5, 1, 11, 10, 3), 'usd_value': 1.201633})
+			values_dict={
+				'date': '2018-05-01', 'timestamp': datetime.datetime(2018, 5, 1, 11, 10, 3),
+				'usd_value': 1.201633})
 	
 	@mock.patch("{}.ExchangeRateDb.save_record".format(ExchangeRateDb.__module__))
 	def historical_rate_to_db_test(self, mock_save_record):
@@ -57,4 +60,34 @@ class ExchangeRateDbTest(TestCase):
 			'date': '2018-01-01', 'historical': True}
 		self.object.save_json_rate_to_db(input_json)
 		mock_save_record.assert_called_with(
-			values_dict={'usd_value': 1.201496, 'timestamp': datetime.datetime(2018, 1, 1, 21, 59, 59), 'date': '2018-01-01'})
+			values_dict={
+				'usd_value': 1.201496, 'timestamp': datetime.datetime(2018, 1, 1, 21, 59, 59),
+				'date': '2018-01-01'})
+	
+	@mock.patch("{}.ExchangeRateDb.db_connect".format(ExchangeRateDb.__module__))
+	@mock.patch("{}.sqlalchemy".format(ExchangeRateDb.__module__))
+	def get_history_test(self, mock_sql_alchemy, mock_db_connect):
+		mock_sql_alchemy.text.return_value = 'QUERYTEXT'
+		mock_db_connect().execute().fetchall.return_value = [
+			(datetime.date(2018, 5, 1), datetime.datetime(2018, 5, 1, 23, 0), Decimal('19.37371628')),
+			(datetime.date(2018, 5, 2), datetime.datetime(2018, 5, 2, 23, 0), Decimal('87.74356140'))
+		]
+		
+		result = self.object.get_history('2018-05-01', '2018-05-05')
+		mock_sql_alchemy.text.assert_called_with(mock.ANY)
+		mock_db_connect().execute.assert_called_with('QUERYTEXT', end_date='2018-05-05', start_date='2018-05-01')
+		
+		expected_result = [
+			{
+				'date': datetime.date(2018, 5, 1),
+				'timestamp': datetime.datetime(2018, 5, 1, 23, 0),
+				'usd_value': 19.37371628
+			},
+			{
+				'date': datetime.date(2018, 5, 2),
+				'timestamp': datetime.datetime(2018, 5, 2, 23, 0),
+				'usd_value': 87.7435614
+			}
+		]
+		
+		self.assertEqual(expected_result, result)

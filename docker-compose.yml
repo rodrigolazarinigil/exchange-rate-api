@@ -1,7 +1,7 @@
 version: '2'
 services:
     app:
-        container_name: exchange-rate
+        container_name: app
         build: ""
         image: exchange-rate
         ports:

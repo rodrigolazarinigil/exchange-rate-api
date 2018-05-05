@@ -1,5 +1,3 @@
-from pandas._libs.lib import timedelta
-
 from domain.exchange_rate_db import ExchangeRateDb
 from request.fixer_io_requester import FixerIoRequester
 from request.mock_requester import MockRequester
@@ -11,27 +9,31 @@ from util.db_connection import PostgresClient
 class ExchangeRateApi:
 	
 	def __init__(self):
-		self.requester = self.get_requester()
-		self.db = ExchangeRateDb(db_client=PostgresClient())
+		self._requester = None
+		self._db = None
+		
+	def get_db(self):
+		if self._db is None:
+			self._db = ExchangeRateDb(db_client=PostgresClient())
+		
+		return self._db
 	
-	@staticmethod
-	def get_requester():
-		if os.getenv("API_ENV") == "FIXER":
-			return FixerIoRequester()
-		else:
-			return MockRequester()
+	def get_requester(self, force_update=False):
+		if self._requester is None or force_update:
+			if os.getenv("API_ENV") == "FIXER":
+				self._requester = FixerIoRequester()
+			else:
+				self._requester = MockRequester()
+		
+		return self._requester
 	
 	def save_latest_rate(self):
-		rate = self.requester.get_latest_rate()
-		print(rate)
-		self.db.save_json_rate_to_db(rate)
+		print(self.get_requester().get_latest_rate)
+		rate = self.get_requester().get_latest_rate()
+		self.get_db().save_json_rate_to_db(rate)
 	
 	def get_latest_rate(self):
-		return self.db.get_latest()
+		return self.get_db().get_latest()
 	
-	# def get_historical_rate_by_range(self, start_date, end_date):
-	# 	for n in range(int((end_date - start_date).days)):
-	# 		rate = self.requester.get_historical_rate_by_range(start_date + timedelta(n))
-	# 		self.db.save_json_rate_to_db(rate)
-	#
-	# 	return None
+	def get_history_rate(self, start_date, end_date):
+		return self.get_db().get_history(start_date, end_date)

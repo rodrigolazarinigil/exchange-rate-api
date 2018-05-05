@@ -1,12 +1,11 @@
 from unittest import TestCase, mock
 
-from domain.exchange_rate_db import ExchangeRateDb
-from util.db_connection import PostgresClient
+from domain.exchange_rate_api import ExchangeRateApi
 import os
 import datetime
 
 
-class ExchangeRateDbTest(TestCase):
+class ExchangeRateApiTest(TestCase):
 	
 	def setUp(self):
 		os.environ["USER"] = 'exchange_rate_user'
@@ -14,47 +13,59 @@ class ExchangeRateDbTest(TestCase):
 		os.environ["HOST"] = 'localhost'
 		os.environ["PORT"] = '5432'
 		os.environ["DB"] = 'exchange_rate'
-		self.object = ExchangeRateDb(PostgresClient())
+		os.environ["API_ENV"] = ""
+		self.object = ExchangeRateApi()
 	
-	@mock.patch("{}.ExchangeRateDb.db_connect".format(ExchangeRateDb.__module__))
-	@mock.patch("{}.sqlalchemy".format(ExchangeRateDb.__module__))
-	@mock.patch("{}.insert".format(ExchangeRateDb.__module__))
-	def save_record_test(self, mock_insert, mock_sqlalchemy, mock_db_connect):
-		mock_sqlalchemy.MetaData.return_value = 'METADATA'
-		mock_table = mock_sqlalchemy.Table
-		mock_sqlalchemy.Date.return_value = 'DATETYPE'
-		mock_sqlalchemy.TIMESTAMP.return_value = 'TIMESTAMPTYPE'
-		mock_sqlalchemy.Float.return_value = 'FLOATTYPE'
-		mock_sqlalchemy.Column.side_effect = lambda name, coltype: name + '---' + coltype()
-		mock_insert_stmt = mock_insert().values().on_conflict_do_nothing
+	@mock.patch("{}.ExchangeRateDb".format(ExchangeRateApi.__module__))
+	def get_db_test(self, mock_exchange_db):
+		"""
+			Checks if db object is created only once
+		"""
+		self.object.get_db()
+		self.object.get_db()
 		
-		input_value = {
-			'date': '2017-01-01', 'timestamp': 1514851199, 'usd_value': 1.3
-		}
-		
-		self.object.save_record(input_value)
-		mock_table.assert_called_with(
-			'euro_to_dollar_rate', 'METADATA', 'date---DATETYPE', 'timestamp---TIMESTAMPTYPE',
-			'usd_value---FLOATTYPE', schema='exchange')
-		mock_insert_stmt.assert_called_with(index_elements=['date', 'timestamp'])
-		mock_db_connect.assert_called_with()
+		mock_exchange_db.assert_called_once_with(db_client=mock.ANY)
 	
-	@mock.patch("{}.ExchangeRateDb.save_record".format(ExchangeRateDb.__module__))
-	def latest_rate_to_db_test(self, mock_save_record):
-		input_json = {
-			'rates': {'USD': 1.201633}, 'base': 'EUR', 'date': '2018-05-01', 'success': True,
-			'timestamp': 1525183803
-		}
+	@mock.patch("{}.FixerIoRequester".format(ExchangeRateApi.__module__))
+	@mock.patch("{}.MockRequester".format(ExchangeRateApi.__module__))
+	def get_requester_test(self, mock_mock_requester, mock_fixer_requester):
+		"""
+			Ensure that db object is created only once
+		"""
+		requester = self.object.get_requester()
+		self.assertEqual(mock_mock_requester(), requester)
 		
-		self.object.save_json_rate_to_db(input_json)
-		mock_save_record.assert_called_with(
-			values_dict={'date': '2018-05-01', 'timestamp': datetime.datetime(2018, 5, 1, 11, 10, 3), 'usd_value': 1.201633})
+		os.environ["API_ENV"] = "FIXER"
+		requester = self.object.get_requester(force_update=True)
+		self.assertEqual(mock_fixer_requester(), requester)
 	
-	@mock.patch("{}.ExchangeRateDb.save_record".format(ExchangeRateDb.__module__))
-	def historical_rate_to_db_test(self, mock_save_record):
-		input_json = {
-			'success': True, 'rates': {'USD': 1.201496}, 'timestamp': 1514851199, 'base': 'EUR',
-			'date': '2018-01-01', 'historical': True}
-		self.object.save_json_rate_to_db(input_json)
-		mock_save_record.assert_called_with(
-			values_dict={'usd_value': 1.201496, 'timestamp': datetime.datetime(2018, 1, 1, 21, 59, 59), 'date': '2018-01-01'})
+	@mock.patch("{}.MockRequester".format(ExchangeRateApi.__module__))
+	@mock.patch("{}.ExchangeRateDb".format(ExchangeRateApi.__module__))
+	def save_latest_rate_test(self, mock_exchange_rate_db, mock_mock_requester):
+		"""
+			Checks if the return from the requester is sent to the correct db method
+		"""
+		mock_mock_requester().get_latest_rate.return_value = "LATESTRATE"
+		
+		self.object.save_latest_rate()
+		mock_mock_requester().get_latest_rate.assert_called_with()
+		mock_exchange_rate_db().save_json_rate_to_db.assert_called_with('LATESTRATE')
+	
+	@mock.patch("{}.ExchangeRateDb".format(ExchangeRateApi.__module__))
+	def get_latest_rate_test(self, mock_exchange_rate_db):
+		"""
+			Checks if the value returned is the same returned from the db
+		:return:
+		"""
+		mock_exchange_rate_db().get_latest.return_value = {
+			'date': datetime.datetime(2020, 9, 25, 23, 0), 'usd_value': 1.99013608}
+		
+		latest_rate = self.object.get_latest_rate()
+		self.assertEqual({
+			'date': datetime.datetime(2020, 9, 25, 23, 0), 'usd_value': 1.99013608}, latest_rate)
+	
+	@mock.patch("{}.ExchangeRateDb".format(ExchangeRateApi.__module__))
+	def get_history_rate_test(self, mock_exchange_rate_db):
+		result = self.object.get_history_rate('2018-05-01', '2018-05-05')
+		mock_exchange_rate_db().get_history.assert_called_with('2018-05-01', '2018-05-05')
+		self.assertEqual(mock_exchange_rate_db().get_history.return_value, result)

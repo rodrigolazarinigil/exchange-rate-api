@@ -86,7 +86,35 @@ class ExchangeRateDb:
 			if not conn.closed:
 				conn.close()
 		
-		return str({
+		return {
 			"date": result["timestamp"],
 			"usd_value": float(result["usd_value"])
-		})
+		}
+	
+	def get_history(self, start_date, end_date):
+		conn = self.db_connect()
+		
+		try:
+			s = sqlalchemy.text("""
+				select date, "timestamp", usd_value
+				from (
+					select a.*, row_number() over (partition by date order by "timestamp" desc) as time_order
+					from exchange.euro_to_dollar_rate a
+					where date between :start_date and :end_date
+				) x
+			""")
+			
+			result_query = conn.execute(s, start_date=start_date, end_date=end_date).fetchall()
+			result_dict = []
+			for x in result_query:
+				result_dict.append({
+					"date": x[0],
+					"timestamp": x[1],
+					"usd_value": float(x[2])
+				})
+		
+		finally:
+			if not conn.closed:
+				conn.close()
+		
+		return result_dict
