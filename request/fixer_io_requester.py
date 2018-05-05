@@ -10,8 +10,8 @@ class FixerIoRequester:
 
 	def get_latest_rate(self):
 		r = requests.get(url=self.latest_rate_url)
-		return str(r.json())
+		return r.json()
 
 	def get_historical_rate_by_range(self, date):
 		r = requests.get(url=self.historical_rate_by_range_url)
-		return str(r.json())
+		return r.json()

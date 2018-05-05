@@ -43,7 +43,7 @@ class MockRequester:
 	def _latest_callback(request, context):
 		return """
 			{{"rates": {{"USD": {fakerate}}}, "base": "EUR", "date": "{date}", "success": "True", "timestamp": {time}}}
-		""".format(date=str(date.today()), fakerate=random.uniform(1, 2), time=int(round(time.time())))
+		""".format(date=str(date.today()), fakerate=random.uniform(1, 2), time=time.time())
 	
 	def _history_callback(self, request, context):
 		m = re.search(pattern=self.history_re_pattern, string=request.url)
@@ -53,4 +53,4 @@ class MockRequester:
 		return """
 			{{"success": "True", "rates": {{"USD": {fakerate}}}, "timestamp": {time}, "base": "EUR","date": "{date}",
 			"historical": "True"}}
-		""".format(date=url_date, fakerate=random.uniform(1, 2), time=int(round(time.time())))
+		""".format(date=url_date, fakerate=random.uniform(1, 2), time=time.time())
