@@ -102,6 +102,7 @@ class ExchangeRateDb:
 					from exchange.euro_to_dollar_rate a
 					where date between :start_date and :end_date
 				) x
+				where time_order = 1
 			""")
 			
 			result_query = conn.execute(s, start_date=start_date, end_date=end_date).fetchall()
