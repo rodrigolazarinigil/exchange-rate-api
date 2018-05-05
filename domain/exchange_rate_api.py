@@ -28,7 +28,6 @@ class ExchangeRateApi:
 		return self._requester
 	
 	def save_latest_rate(self):
-		print(self.get_requester().get_latest_rate)
 		rate = self.get_requester().get_latest_rate()
 		self.get_db().save_json_rate_to_db(rate)
 	
