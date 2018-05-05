@@ -86,10 +86,13 @@ class ExchangeRateDb:
 			if not conn.closed:
 				conn.close()
 		
-		return {
-			"date": result["timestamp"],
-			"usd_value": float(result["usd_value"])
-		}
+		if result is not None:
+			return {
+				"date": result["timestamp"],
+				"usd_value": float(result["usd_value"])
+			}
+		else:
+			return None
 	
 	def get_history(self, start_date, end_date):
 		conn = self.db_connect()

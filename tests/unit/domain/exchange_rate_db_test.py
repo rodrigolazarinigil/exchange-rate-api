@@ -68,6 +68,39 @@ class ExchangeRateDbTest(TestCase):
 	
 	@mock.patch("{}.ExchangeRateDb.db_connect".format(ExchangeRateDb.__module__))
 	@mock.patch("{}.sqlalchemy".format(ExchangeRateDb.__module__))
+	def get_latest_test(self, mock_sql_alchemy, mock_db_connect):
+		mock_sql_alchemy.text.return_value = 'QUERYTEXT'
+		mock_db_connect().execute().fetchone.return_value = {
+			'date': datetime.date(2018, 5, 1),
+			'timestamp': datetime.datetime(2018, 5, 1, 23, 0),
+			'usd_value': 19.37371628
+		}
+		result = self.object.get_latest()
+		mock_sql_alchemy.text.assert_called_with(mock.ANY)
+		mock_db_connect().execute.assert_called_with('QUERYTEXT')
+		
+		expected_result = {
+			'date': datetime.datetime(2018, 5, 1, 23, 0),
+			'usd_value': 19.37371628
+		}
+		
+		self.assertEqual(expected_result, result)
+	
+	@mock.patch("{}.ExchangeRateDb.db_connect".format(ExchangeRateDb.__module__))
+	@mock.patch("{}.sqlalchemy".format(ExchangeRateDb.__module__))
+	def get_latest_empty_test(self, mock_sql_alchemy, mock_db_connect):
+		mock_sql_alchemy.text.return_value = 'QUERYTEXT'
+		mock_db_connect().execute().fetchone.return_value = None
+		result = self.object.get_latest()
+		mock_sql_alchemy.text.assert_called_with(mock.ANY)
+		mock_db_connect().execute.assert_called_with('QUERYTEXT')
+		
+		expected_result = None
+		
+		self.assertEqual(expected_result, result)
+	
+	@mock.patch("{}.ExchangeRateDb.db_connect".format(ExchangeRateDb.__module__))
+	@mock.patch("{}.sqlalchemy".format(ExchangeRateDb.__module__))
 	def get_history_test(self, mock_sql_alchemy, mock_db_connect):
 		mock_sql_alchemy.text.return_value = 'QUERYTEXT'
 		mock_db_connect().execute().fetchall.return_value = [

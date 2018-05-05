@@ -20,5 +20,4 @@ start-app:
 unit-tests:
 	docker-compose -f docker-compose.yml build app
 	docker-compose -f tests/docker-compose.yml build tests
-	docker-compose -f tests/docker-compose.yml run --rm
-	tests
+	docker-compose -f tests/docker-compose.yml run --rm tests
