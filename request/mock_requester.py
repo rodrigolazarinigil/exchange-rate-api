@@ -2,6 +2,8 @@ import requests
 import requests_mock
 import re
 import random
+from datetime import date
+import time
 
 
 class MockRequester:
@@ -12,7 +14,7 @@ class MockRequester:
 		self.session.mount('http://data.fixer.io', self.adapter)
 		self.adapter.register_uri(
 			method="GET", url='http://data.fixer.io/request_api/latest',
-			text='{"rates": {"USD": 1.201633}, "base": "EUR", "date": "2018-05-01", "success": "True", "timestamp": 1525183803}'
+			text=self._latest_callback
 		)
 		matcher = re.compile('http://data.fixer.io/request_api/([\d]{4}-[\d]{2}-[\d]{2})')
 		# noinspection PyTypeChecker
@@ -37,12 +39,18 @@ class MockRequester:
 		
 		return r.json()
 	
+	@staticmethod
+	def _latest_callback(request, context):
+		return """
+			{{"rates": {{"USD": {fakerate}}}, "base": "EUR", "date": "{date}", "success": "True", "timestamp": {time}}}
+		""".format(date=str(date.today()), fakerate=random.uniform(1, 2), time=int(round(time.time())))
+	
 	def _history_callback(self, request, context):
 		m = re.search(pattern=self.history_re_pattern, string=request.url)
 		if m:
-			date = m.group(2)
+			url_date = m.group(2)
 		
 		return """
-			{{"success": "True", "rates": {{"USD": {fakerate}}}, "timestamp": 1514851199, "base": "EUR","date": "{date}",
+			{{"success": "True", "rates": {{"USD": {fakerate}}}, "timestamp": {time}, "base": "EUR","date": "{date}",
 			"historical": "True"}}
-		""".format(date=date, fakerate=random.uniform(1, 2))
+		""".format(date=url_date, fakerate=random.uniform(1, 2), time=int(round(time.time())))

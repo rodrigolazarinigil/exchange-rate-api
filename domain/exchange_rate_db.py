@@ -1,4 +1,6 @@
 import sqlalchemy
+from sqlalchemy.dialects.postgresql import insert
+import datetime
 
 
 class ExchangeRateDb:
@@ -34,7 +36,7 @@ class ExchangeRateDb:
 		self.save_record(
 			values_dict={
 				'date': json_result['date'],
-				'timestamp': json_result['date'],
+				'timestamp': datetime.datetime.fromtimestamp(json_result['timestamp']),
 				'usd_value': json_result['rates']['USD']
 			}
 		)
@@ -56,8 +58,7 @@ class ExchangeRateDb:
 				sqlalchemy.Column('usd_value', sqlalchemy.Float),
 				schema='exchange'
 			)
-			
-			insert_stmt = sqlalchemy.insert(rate_table).values(**values_dict)
+			insert_stmt = insert(rate_table).values(**values_dict)
 			insert_if_not_exists = insert_stmt.on_conflict_do_nothing(
 				index_elements=['date', 'timestamp']
 			)
@@ -66,3 +67,26 @@ class ExchangeRateDb:
 		finally:
 			if not conn.closed:
 				conn.close()
+	
+	def get_latest(self):
+		conn = self.db_connect()
+		
+		try:
+			s = sqlalchemy.text("""
+				select *
+				from exchange.euro_to_dollar_rate
+				where (date, "timestamp") = (
+					select max(date), max("timestamp") from exchange.euro_to_dollar_rate
+				)
+			""")
+			
+			result = conn.execute(s).fetchone()
+		
+		finally:
+			if not conn.closed:
+				conn.close()
+		
+		return str({
+			"date": result["timestamp"],
+			"usd_value": float(result["usd_value"])
+		})

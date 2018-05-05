@@ -1,9 +1,15 @@
 from flask import Flask, request
+from domain.exchange_rate_api import ExchangeRateApi
+import os
 
-from util.api_functions import get_requester
+os.environ["USER"] = 'exchange_rate_user'
+os.environ["PWD"] = 'password'
+os.environ["HOST"] = 'localhost'
+os.environ["PORT"] = '5432'
+os.environ["DB"] = 'exchange_rate'
 
 app = Flask(__name__)
-request_api = get_requester()
+request_api = ExchangeRateApi()
 
 
 @app.route('/latest')
