@@ -1,6 +1,6 @@
 version: '2'
 services:
-    exchange-rate:
+    app:
         container_name: exchange-rate
         build: ""
         image: exchange-rate
@@ -9,12 +9,12 @@ services:
         environment:
           - CRONFREQUENCY=* * * * *
 
-    exchange-rate-db:
-        container_name: exchange-rate-db
+    db:
+        container_name: db
         build: "db/"
         image: exchange-rate-db
         ports:
-          - 5433:5432
+          - 5432:5432
         environment:
           - POSTGRES_USER=exchange_rate_user
           - POSTGRES_PASSWORD=password

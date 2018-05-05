@@ -28,7 +28,7 @@ class PostgresClient:
 
 		return cls.conn_engine
 
-	def upsert(self, insert_stmt, ):
+	def save_record(self, insert_stmt, ):
 		insert_stmt = insert(table).values(
 			id='some_existing_id',
 			data='inserted value')
